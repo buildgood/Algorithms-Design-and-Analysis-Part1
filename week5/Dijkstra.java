@@ -1,45 +1,61 @@
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.PriorityQueue;
 
 public class Dijkstra {
 
-    private static final int NUM_NODE = 200;
+    /**
+     * The Node class represents a node with label
+     * and distance from source.
+     */
+    private static class Node {
+        private int vertex;
+        private int distance;
 
-    public static void dijkstra(int[][] edges, int[] distance) {
-
-        for(int i = 2; i < distance.length; i++) {
-            distance[i] = Integer.MAX_VALUE;
+        public Node(int vertex) {
+            this.vertex = vertex;
+            this.distance = Integer.MAX_VALUE;
         }
 
-        Set<Integer> visited = new HashSet<>();
+        public void setDistance(int distance) {
+            this.distance = distance;
+        }
+    }
 
-        visited.add(1);
+    private static final int NUM_NODE = 200;
 
-        while (visited.size() < NUM_NODE) {
-            int minEdge = Integer.MAX_VALUE;
-            int minNode = Integer.MAX_VALUE;
+    public static Node[] dijkstra(int[][] edges) {
 
-            for(int source : visited) {
-                for(int i = 1; i <= NUM_NODE; i++) {
-                    if(!visited.contains(i) && edges[source][i] > 0) {
-                        int sum = edges[source][i] + distance[source];
-                        if(sum < distance[i]) {
-                            distance[i] = sum;
-                        }
-                        if(distance[i] <= minEdge) {
-                            minEdge = distance[i];
-                            minNode = i;
-                        }
+        Node[] nodes = new Node[NUM_NODE + 1];
+        PriorityQueue<Node> pq = new PriorityQueue<>((a, b) -> (a.distance - b.distance));
+
+        for (int i = 1; i <= NUM_NODE; i++) {
+            nodes[i] = new Node(i);
+            if (i == 1) {
+                nodes[i].setDistance(0);
+            }
+            pq.offer(nodes[i]);
+        }
+
+        while (pq.size() > 0) {
+            Node node = pq.poll();
+
+            for (int j = 1; j <= NUM_NODE; j++) {
+                if (node.vertex == j) continue;
+                if (edges[node.vertex][j] > 0) {
+                    int sum = edges[node.vertex][j] + nodes[node.vertex].distance;
+                    if (sum < nodes[j].distance) {
+                        pq.remove(nodes[j]);
+                        nodes[j].setDistance(sum);
+                        pq.offer(nodes[j]);
                     }
                 }
             }
-
-
-            visited.add(minNode);
         }
+
+        return nodes;
+
     }
 
     public static void main(String[] args) throws Exception {
@@ -62,14 +78,12 @@ public class Dijkstra {
             }
         }
 
-        int[] distance = new int[NUM_NODE + 1];
-
-        dijkstra(edges, distance);
+        Node[] nodes = dijkstra(edges);
 
         int[] index = new int[]{7,37,59,82,99,115,133,165,188,197};
 
         for(int i : index) {
-            System.out.print(distance[i] + ",");
+            System.out.print(nodes[i].distance + " ");
         }
     }
 }
